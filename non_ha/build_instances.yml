@@ -1,0 +1,99 @@
+---
+- name: All instances servers setup file
+  hosts: command
+  gather_facts: no
+  tasks:
+  - name: Remove instances.yml server file if present
+    vars:
+      ansible_port: "{{ PORT }}"
+    file:
+      path: /root/instances.yml
+      state: absent
+  - name: Build yaml
+    vars:
+      ansible_port: "{{ PORT }}"
+    become: true
+    blockinfile:
+        path: /root/instances.yml
+        create: yes
+        marker: ""
+        block: |
+          ---
+          global_configuration:
+            CONTAINER_REGISTRY: {{ c_registry }}/contrail
+            REGISTRY_PRIVATE_INSECURE: false
+            CONTAINER_REGISTRY_USERNAME: {{ c_username }}
+            CONTAINER_REGISTRY_PASSWORD: {{ c_password }}
+          provider_config:
+            bms:
+              ssh_user: {{ USERNAME }}
+              ssh_pwd: {{ DEVICE_PASSWORD }}
+              ntpserver: {{ ntp_server }}
+              domainsuffix: local
+          instances:
+            contrail-control:
+              ip: {{ hostvars['contrail-control']['PRIVATE_IP'] }}
+              ssh_user: {{ USERNAME }}
+              ssh_pwd: {{ DEVICE_PASSWORD }}
+              provider: bms
+              roles:
+                config:
+                config_database:
+                control:
+                webui:
+                analytics:
+                analytics_database:
+                analytics_alarm:
+                analytics_snmp:
+                vrouter:
+                  TSN_EVPN_MODE: true
+                  VROUTER_GATEWAY: {{ v_router_gateway }}
+                openstack_control:
+                openstack_network:
+                openstack_storage:
+                openstack_monitoring:
+                openstack_compute:
+                appformix_openstack_controller:
+                appformix_compute:
+                appformix_bare_host:
+            contrail-insights:
+              ip: {{ hostvars['contrail-insights']['PRIVATE_IP'] }}
+              ssh_user: root
+              ssh_pwd: {{ DEVICE_PASSWORD }}
+              provider: bms
+              roles:
+                appformix_controller:
+            contrail-xflow:
+              ip: {{ hostvars['contrail-xflow']['PRIVATE_IP'] }}
+              ssh_user: root
+              ssh_pwd: {{ DEVICE_PASSWORD }}
+              provider: bms
+              roles:
+                appformix_bare_host:
+                appformix_flows:
+          contrail_configuration:
+            CONTRAIL_VERSION: "{{ CEM_VER }}"
+            CLOUD_ORCHESTRATOR: openstack
+            RABBITMQ_NODE_PORT: 5673
+            VROUTER_GATEWAY: {{ v_router_gateway }}
+            ENCAP_PRIORITY: VXLAN,MPLSoUDP,MPLSoGRE
+            OPENSTACK_VERSION: queens
+            AUTH_MODE: keystone
+            KEYSTONE_AUTH_HOST: {{ hostvars['contrail-control']['PRIVATE_IP'] }}
+            KEYSTONE_AUTH_URL_VERSION: /v3
+            CONTROL_NODES: {{ fabric_facing_ip }}
+            PHYSICAL_INTERFACE: {{ fabric_facing_intf }}
+            TSN_NODES: {{ fabric_facing_ip }}
+          kolla_config:
+            kolla_globals:
+              enable_haproxy: no
+              enable_haproxy: no
+              enable_ironic: no
+              swift_disk_partition_size: {{ kolla_partition_size }}
+              openstack_release: queens
+            kolla_passwords:
+              keystone_admin_password: {{ DEVICE_PASSWORD }}
+          appformix_configuration:
+          xflow_configuration:
+            clickhouse_retention_period_secs: 7200
+            loadbalancer_collector_vip: {{ xflow_load_balance_vip }}

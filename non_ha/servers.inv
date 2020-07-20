@@ -1,0 +1,37 @@
+[servers]
+contrail-control SHORT_NAME=control PORT=37001 PRIVATE_IP=100.123.34.0
+contrail-command SHORT_NAME=command PORT=37016 PRIVATE_IP=100.123.34.3
+contrail-insights SHORT_NAME=insights PORT=37006 PRIVATE_IP=100.123.34.1
+contrail-xflow SHORT_NAME=xflow PORT=37021 PRIVATE_IP=100.123.34.4
+
+[fabric]
+fabric-device SHORT_NAME=fabric IP=100.123.15.0
+
+[servers:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_host='66.129.235.5'
+ansible_ssh_user='root'
+ansible_password='Juniper!1'
+CEM_VER=2005.62
+container_name=contrail_command_deployer
+
+[command]
+contrail-command SHORT_NAME=command PORT=37016 PRIVATE_IP=100.123.34.3
+
+[command:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_host='66.129.235.5'
+ansible_ssh_user='root'
+ansible_password='Juniper!1'
+c_registry=hub.juniper.net
+c_username=[registry_username]
+c_password=[registry_password]
+CEM_VER=2005.62
+USERNAME=root
+DEVICE_PASSWORD=Juniper!1
+ntp_server=100.123.0.1
+v_router_gateway=10.0.1.254
+fabric_facing_intf=eth1
+fabric_facing_ip=10.0.1.2
+kolla_partition_size=20GB
+xflow_load_balance_vip=100.123.34.200

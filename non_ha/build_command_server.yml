@@ -1,0 +1,47 @@
+---
+- name: Command servers setup file
+  hosts: command_center
+  gather_facts: no
+  tasks:
+  - name: Remove command server file if present
+    file:
+      path: /root/command_servers.yml
+      state: absent
+  - name: Build command_servers.yml
+    become: true
+    blockinfile:
+        path: /root/command_servers.yml
+        create: yes
+        marker: ""
+        block: |
+          ---
+          command_servers:
+              command:
+                ip: {{ hostvars['command']['PRIVATE_IP'] }}
+                connection: ssh
+                ssh_user: root
+                ssh_pass: {{ DEVICE_PASSWORD }}
+                sudo_pass: {{ DEVICE_PASSWORD }}
+                ntpserver: {{ ntp_server }}
+                registry_insecure: false
+                container_registry: hub.juniper.net/contrail
+                container_name: contrail-command
+                container_tag: {{ CEM_VER }}
+                container_registry_username: {{ c_username }}
+                container_registry_password: {{ c_password }}
+                config_dir: /etc/contrail
+
+                contrail_config:
+                    database:
+                        type: postgres
+                        dialect: postgres
+                        password: contrail123
+                    keystone:
+                        assignment:
+                            data:
+                              users:
+                                admin:
+                                  password: {{ DEVICE_PASSWORD }}
+                    insecure: true
+                    client:
+                      password: {{ DEVICE_PASSWORD }}

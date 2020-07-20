@@ -1,0 +1,10 @@
+---
+#- name: Upgrade CentOS
+#  import_playbook: upgrade_centos.yml  ## If needed
+#  when: upgrade_centos is true
+
+- name: JCL pre CEM server setup
+  import_playbook: CEM_JCL_setup.yml
+
+- name: CEM contrail command install and run
+  import_playbook: CEM_run_contrail_command.yml

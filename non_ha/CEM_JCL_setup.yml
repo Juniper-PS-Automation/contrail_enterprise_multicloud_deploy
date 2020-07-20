@@ -1,0 +1,148 @@
+---
+- name: JCL pre CEM server setup
+  hosts: servers
+  gather_facts: no
+  #vars_prompt:
+  #- name: USERNAME
+    #prompt: Device Username
+    #private: no
+  #- name: DEVICE_PASSWORD
+    #prompt: Device Password
+    #private: yes
+  tasks:
+  - name: Remove old appformix and xflow files ### If needed
+    vars:
+      ansible_port: "{{ PORT }}"
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /opt/software/xflow/appformix-flows-1.0.6.tar.gz
+      - /opt/software/xflow/appformix-flows-ansible-1.0.6.tar.gz
+      - /opt/software/appformix/appformix-3.1.11.tar.gz
+      - /opt/software/appformix-dependencies-images-3.1.11.tar.gz
+      - /opt/software/appformix/appformix-internal-openstack-3.1.sig
+      - /opt/software/appformix/appformix-network_device-images-3.1.11.tar.gz
+      - /opt/software/appformix/appformix-openstack-images-3.1.11.tar.gz
+      - /opt/software/appformix/appformix-platform-images-3.1.11.tar.gz
+      - /opt/software/appformix/appformix-dependencies-images-3.1.11.tar.gz
+    when: "'contrail-command' in inventory_hostname"
+
+  - name: Set hostnames
+    vars:
+      ansible_port: "{{ PORT }}"
+    hostname:
+      name: "{{ item }}"
+    with_items: "{{ inventory_hostname }}"
+
+  - name: Remove /etc/hosts
+    vars:
+      ansible_port: "{{ PORT }}"
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /etc/hosts
+
+  - name: Update /etc/hosts
+    vars:
+      ansible_port: "{{ PORT }}"
+    become: true
+    blockinfile:
+        path: /etc/hosts
+        create: yes
+        marker: ""
+        block: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+          {% for x in groups['servers'] %}
+          {{ hostvars[x]['PRIVATE_IP'] }} {{ hostvars[x].inventory_hostname }}    {{ hostvars[x]['SHORT_NAME'] }}
+          {% endfor %}
+          {% for i in groups['fabric'] %}
+          {{ hostvars[i]['IP'] }} {{ hostvars[i].inventory_hostname }}    {{ hostvars[i]['SHORT_NAME'] }}
+          {% endfor %}
+
+  - name: SSH KeyGen command
+    vars:
+      ansible_port: "{{ PORT }}"
+    tags: run
+    shell: >
+      ssh-keygen -q -b 2048 -t rsa -N "" -C "creating SSH" -f ~/.ssh/id_rsa
+      creates="~/.ssh/id_rsa"
+
+  - name: Fetch the keyfile from the node to master
+    vars:
+      ansible_port: "{{ PORT }}"
+    tags: run
+    fetch:
+      src: "~/.ssh/id_rsa.pub"
+      dest: "buffer/{{ inventory_hostname }}-id_rsa.pub"
+      flat: yes
+
+  - name: Copy the key add to authorized_keys using Ansible module
+    vars:
+      ansible_port: "{{ PORT }}"
+    tags: runcd
+    authorized_key:
+      user: root
+      state: present
+      key: "{{ lookup('file','buffer/{{item}}-id_rsa.pub')}}"
+    when: "{{ (item != inventory_hostname) }}"
+    with_items:
+      - "{{ groups['servers'] }}"
+
+  - name: Add ifcfg-eth1 to aio-server
+    vars:
+      ansible_port: "{{ PORT }}"
+    become: true
+    blockinfile:
+        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        create: yes
+        marker: ""
+        block: |
+          TYPE=Ethernet
+          BOOTPROTO=none
+          DEFROUTE=no
+          IPV4_FAILURE_FATAL=no
+          IPV6INIT=yes
+          IPV6_AUTOCONF=yes
+          IPV6_DEFROUTE=yes
+          IPV6_FAILURE_FATAL=no
+          IPV6_ADDR_GEN_MODE=stable-privacy
+          NAME=eth1
+          DEVICE=eth1
+          ONBOOT=yes
+          IPADDR=10.0.1.2
+          PREFIX=24
+    when: "'contrail-control' in inventory_hostname"
+
+  - name: Add route-eth1 to aio-control-server
+    vars:
+      ansible_port: "{{ PORT }}"
+    become: true
+    blockinfile:
+        path: /etc/sysconfig/network-scripts/route-eth1
+        create: yes
+        block: |
+          10.0.0.0/8 via 10.0.1.254 dev eth1
+    when: "'contrail-control' in inventory_hostname"
+
+  - name: Check if Service Exists
+    vars:
+      ansible_port: "{{ PORT }}"
+    stat: path=/etc/init.d/network
+    register: service_status
+
+  - name: Stop Service
+    vars:
+      ansible_port: "{{ PORT }}"
+    service: name=network state=stopped
+    when: service_status.stat.exists
+    register: service_stopped
+
+  - name: Wait for network
+    vars:
+      ansible_port: "{{ PORT }}"
+    wait_for:
+      timeout: 30
