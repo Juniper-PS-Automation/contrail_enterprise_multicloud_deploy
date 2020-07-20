@@ -1,8 +1,12 @@
 ---
-- name: VMM pre CEM server setup
+- name: Server Pre-Setup
   hosts: servers
   gather_facts: no
   tasks:
+  #- name: eth0 interface down, only for VMM POD hack to get kolla VIP
+  #  command: bash -c "ifconfig eth0 down"
+  #  when: "'dummy' in inventory_hostname"
+
   - name: Remove old eth1
     file:
       path: "{{ item }}"
@@ -245,13 +249,11 @@
     - name: Check if Service Exists
       stat: path=/etc/init.d/network
       register: service_status
-      #when: "'control' in inventory_hostname"
     
     - name: Stop Service
       service: name=network state=stopped
       register: service_stopped
       when: service_status.stat.exists
-        #- "'control' in inventory_hostname"
     
     - name: Wait for network
       wait_for:
