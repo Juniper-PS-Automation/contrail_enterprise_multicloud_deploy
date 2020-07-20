@@ -1,0 +1,14 @@
+---
+- name: Setup Hosts File for all Contrail servers
+  hosts: servers
+  gather_facts: no
+  tasks:   
+  - name: Add the inventory into /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: '.*{{ item }}$'
+      line: "{{ hostvars[item]['PRIVATE_IP'] }} {{item}}"
+      state: present
+    with_items:
+      - "{{ groups['servers'] }}"
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"

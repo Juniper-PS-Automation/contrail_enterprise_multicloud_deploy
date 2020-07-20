@@ -1,0 +1,188 @@
+---
+- name: All instances servers setup file
+  hosts: command_center
+  gather_facts: no
+  tasks:
+  - name: Remove instances.yml server file if present
+    file:
+      path: /root/instances.yml
+      state: absent
+  - name: Build instances.yml
+    become: true
+    blockinfile:
+        path: /root/instances.yml
+        create: yes
+        marker: ""
+        block: |
+          ---
+          global_configuration:
+            CONTAINER_REGISTRY: {{ c_registry }}/contrail
+            REGISTRY_PRIVATE_INSECURE: false
+            CONTAINER_REGISTRY_USERNAME: {{ c_username }}
+            CONTAINER_REGISTRY_PASSWORD: {{ c_password }}
+          provider_config:
+            bms:
+              ssh_user: root
+              ssh_pwd: {{ DEVICE_PASSWORD }}
+              ntpserver: {{ ntp_server }}
+              domainsuffix: local
+          instances:
+            control1:
+              ip: {{ hostvars['control1']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                config:
+                config_database:
+                control:
+                webui:
+                analytics:
+                analytics_database:
+                analytics_alarm:
+                analytics_snmp:
+                vrouter:
+                  TSN_EVPN_MODE: true
+                  VROUTER_GATEWAY: {{ v_router_gateway }}
+                openstack_control:
+                openstack_network:
+                openstack_storage:
+                openstack_monitoring:
+                openstack_compute:
+                appformix_bare_host:
+                appformix_openstack_controller:
+                appformix_compute:
+            control2:
+              ip: {{ hostvars['control2']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                config:
+                config_database:
+                control:
+                webui:
+                analytics:
+                analytics_database:
+                analytics_alarm:
+                analytics_snmp:
+                vrouter:
+                  TSN_EVPN_MODE: true
+                  VROUTER_GATEWAY: {{ v_router_gateway }}
+                openstack_control:
+                openstack_network:
+                openstack_storage:
+                openstack_monitoring:
+                openstack_compute:
+                appformix_bare_host:
+                appformix_openstack_controller:
+                appformix_compute:
+            control3:
+              ip: {{ hostvars['control3']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                config:
+                config_database:
+                control:
+                webui:
+                analytics:
+                analytics_database:
+                analytics_alarm:
+                analytics_snmp:
+                vrouter:
+                  TSN_EVPN_MODE: true
+                  VROUTER_GATEWAY: {{ v_router_gateway }}
+                openstack_control:
+                openstack_network:
+                openstack_storage:
+                openstack_monitoring:
+                openstack_compute:
+                appformix_bare_host:
+                appformix_openstack_controller:
+                appformix_compute:
+            insight1:
+              ip: {{ hostvars['insight1']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                appformix_controller:
+                appformix_network_agents:
+            insight2:
+              ip: {{ hostvars['insight2']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                appformix_controller:
+                appformix_network_agents:
+            insight3:
+              ip: {{ hostvars['insight3']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                appformix_controller:
+                appformix_network_agents:
+            xflow1:
+              ip: {{ hostvars['xflow1']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                appformix_bare_host:
+                appformix_flows:
+                  telemetry_in_band_interface_name: eth1
+            xflow2:
+              ip: {{ hostvars['xflow2']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                appformix_bare_host:
+                appformix_flows:
+                  telemetry_in_band_interface_name: eth1
+            xflow3:
+              ip: {{ hostvars['xflow3']['PRIVATE_IP'] }}
+              provider: bms
+              roles:
+                appformix_bare_host:
+                appformix_flows:
+                  telemetry_in_band_interface_name: eth1
+          contrail_configuration:
+            CONTRAIL_CONTAINER_TAG: "{{ CEM_VER }}"
+            CONTRAIL_VERSION: "{{ CEM_VER }}"
+            ENABLE_DESTROY: True
+            CLOUD_ORCHESTRATOR: openstack
+            OPENSTACK_VERSION: queens
+            USE_OPENSTACK_TFTP: True
+            AUTH_MODE: keystone
+            KEYSTONE_AUTH_HOST: {{ hostvars['dummy2']['PRIVATE_IP'] }}
+            KEYSTONE_AUTH_URL_VERSION: /v3
+            CONFIG_DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: 20
+            CONFIG_NODEMGR__DEFAULTS__minimum_diskGB: 20
+            DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: 20
+            METADATA_PROXY_SECRET: contrail123
+            RABBITMQ_NODE_PORT: 5673
+            VROUTER_GATEWAY: {{ v_router_gateway }}
+            ENCAP_PRIORITY: VXLAN,MPLSoUDP,MPLSoGRE
+            UPGRADE_KERNEL: True
+            GENERATE_SSH: True
+            CONTROLLER_NODES: {{ hostvars['control1']['PRIVATE_IP'] }},{{ hostvars['control2']['PRIVATE_IP'] }},{{ hostvars['control3']['PRIVATE_IP'] }}
+            CONTROL_NODES: {{ fabric_facing_ip_1 }},{{ fabric_facing_ip_2 }},{{ fabric_facing_ip_3 }}
+          kolla_config:
+            customize:
+              nova.conf: |
+                [libvirt]
+                virt_type=qemu
+                cpu_mode=none
+            kolla_globals:
+              enable_haproxy: true
+              enable_ironic: false
+              enable_barbican: false
+              enable_swift: true
+              swift_disk_partition_size: 20GB
+              openstack_release: queens
+              kolla_internal_vip_address: {{ hostvars['dummy2']['PRIVATE_IP'] }}
+              kolla_external_vip_address: {{ hostvars['dummy2']['PRIVATE_IP'] }}
+              keepalived_virtual_router_id: 250
+              opencontrail_api_server_ip: {{ hostvars['control1']['PRIVATE_IP'] }} {{ hostvars['control2']['PRIVATE_IP'] }} {{ hostvars['control3']['PRIVATE_IP'] }}
+            kolla_passwords:
+              keystone_admin_password: "contrail123"
+              metadata_secret: contrail123
+          appformix_configuration:
+            appformix_vip: {{ insight_vip }}
+            keepalived_vrrp_interface: {{ insight_vrrp_intf }}
+          xflow_configuration:
+            loadbalancer_collector_vip: {{ xflow_vip }}
+            clickhouse_retention_period_secs: 7200
+            clickhouse_retention_size_bytes: 0
+            telemetry_in_band_cidr: {{ xflow_telemetry_in_band_cidr }}
+            telemetry_in_band_vlan_id: {{ xflow_telemetry_in_band_vlan_id }}
+            loadbalancer_management_vip: {{ hostvars['dummy1']['PRIVATE_IP'] }}

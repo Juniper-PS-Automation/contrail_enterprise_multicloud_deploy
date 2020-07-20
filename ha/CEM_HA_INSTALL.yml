@@ -1,0 +1,12 @@
+---
+- name: ALL server pre-setup
+  import_playbook: server_pre_setup.yml
+
+- name: Build playbooks for CEM command
+  import_playbook: build_command_server.yml
+
+- name: Build playbooks for CEM cluster
+  import_playbook: build_instances_ha.yml
+
+- name: CEM - Dependencies, Install, and Run
+  import_playbook: CEM_run_contrail_command_ha.yml

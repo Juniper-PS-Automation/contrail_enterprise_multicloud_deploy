@@ -1,0 +1,28 @@
+---
+- name: Build Known Host File in all contrail servers
+  hosts: servers
+  gather_facts: no
+  tasks:
+  - block:
+    - name: Remove known_hosts
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /root/.ssh/known_hosts
+        
+    - name: touch known_hosts file
+      file: path=/root/.ssh/known_hosts state=touch
+  
+    - name: apply the contrail servers known_hosts
+      blockinfile:
+        dest: /root/.ssh/known_hosts
+        marker: ""
+        block: |
+          {% for h in groups['servers'] if '{{ssh_known_host_key}}' is defined %}
+          {{ h }},{{ hostvars[h]['PRIVATE_IP'] }} ecdsa-sha2-nistp256 {{ ssh_known_host_key }}
+          {% endfor %}
+      when: "{{ (item == inventory_hostname) }}"
+      with_items:
+        - "{{ groups['servers'] }}"
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"

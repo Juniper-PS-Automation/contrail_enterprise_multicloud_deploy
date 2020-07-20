@@ -1,0 +1,76 @@
+[servers]
+command PRIVATE_IP=10.53.38.177
+control1 PRIVATE_IP=10.53.38.176
+insight1 PRIVATE_IP=10.53.38.175
+xflow1 PRIVATE_IP=10.53.38.174
+dummy1 PRIVATE_IP=10.53.38.173
+control2 PRIVATE_IP=10.53.38.172
+insight2 PRIVATE_IP=10.53.38.171
+xflow2 PRIVATE_IP=10.53.38.170
+dummy2 PRIVATE_IP=10.53.38.17
+control3 PRIVATE_IP=10.53.38.169
+insight3 PRIVATE_IP=10.53.38.168
+xflow3 PRIVATE_IP=10.53.38.167
+
+[servers:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_user='root'
+ansible_password='lab123'
+CEM_VER=2005.62
+container_name=contrail_command_deployer
+fabric_facing_intf=eth1
+fabric_facing_ip_1=172.16.102.104
+fabric_facing_ip_2=172.16.102.105
+fabric_facing_ip_3=172.16.102.106
+v_router_gateway=172.16.102.1
+ssh_known_host_key=AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBO543ilDYejW348dxB8bsesNjZ/PfwFsHM2jaNntcDLqrEQLCohs1Wee9kXIPQt7ECWBkZwcmQsOxwLIPjFMhww=
+insight_ip_1=172.16.102.111
+insight_ip_2=172.16.102.112
+insight_ip_3=172.16.102.113
+xflow_ip_1=172.16.102.114
+xflow_ip_2=172.16.102.115
+xflow_ip_3=172.16.102.116
+command_ip=172.16.102.100
+
+
+[command_center]
+command PRIVATE_IP=10.53.38.177
+
+[command_center:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_user='root'
+ansible_password='lab123'
+c_registry=hub.juniper.net
+c_username=[contrail_registry_user]
+c_password=[contrail_registry_password]
+USERNAME=root
+DEVICE_PASSWORD=lab123
+ntp_server=ntp.juniper.net
+fabric_facing_intf=eth1
+fabric_facing_ip_1=172.16.102.104
+fabric_facing_ip_2=172.16.102.105
+fabric_facing_ip_3=172.16.102.106
+insight_ip_1=172.16.102.111
+insight_ip_2=172.16.102.112
+insight_ip_3=172.16.102.113
+xflow_ip_1=172.16.102.114
+xflow_ip_2=172.16.102.115
+xflow_ip_3=172.16.102.116
+insight_vip=172.16.102.188
+insight_vrrp_intf=eth1
+xflow_vip=172.16.102.189
+xflow_telemetry_in_band_cidr=172.16.102.0/24
+xflow_telemetry_in_band_vlan_id=66
+command_ip=172.16.102.100
+
+[fabric]
+gw1 PRIVATE_IP=10.53.41.142
+gw2 PRIVATE_IP=10.53.41.140
+spine1 PRIVATE_IP=10.53.38.191
+spine2 PRIVATE_IP=10.53.38.19
+leaf1 PRIVATE_IP=10.53.38.188
+leaf2 PRIVATE_IP=10.53.38.186
+leaf3 PRIVATE_IP=10.53.38.184
+leaf4 PRIVATE_IP=10.53.38.182
+sw1 PRIVATE_IP=10.53.38.180
+sw2 PRIVATE_IP=10.53.38.179

@@ -1,0 +1,115 @@
+---
+- name: CEM Install dependencies, docker, contrail registry, contrail command install and run
+  hosts: command_center
+  gather_facts: no
+  tasks:
+  - name: Install epel
+    yum:
+      lock_timeout: 45
+      name:
+        - epel-release
+      state: latest
+
+  - name: upgrade all packages
+    yum:
+      lock_timeout: 10
+      name: '*'
+      state: latest
+
+  #- name: Ensure no prior versions exist
+  #  yum:
+  #    name: "{{ packages }}"
+  #    state: absent
+  #    ansible_python_interpreter: /usr/bin/python
+  #    packages:
+  #    - docker-client
+  #    - docker-client-latest
+  #    - docker-common
+  #    - docker-latest
+  #    - docker-latest-logrotate
+  #    - docker-logrotate
+  #    - docker-engine
+  #    - docker-ce
+
+  - name: Install needed stuff
+    yum:
+      lock_timeout: 30
+      name:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      state: latest
+
+  - name: Add repository
+    yum_repository:
+      name: docker-ce
+      description: Docker YUM repo
+      baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+      gpgcheck: yes
+      gpgkey: https://download.docker.com/linux/centos/gpg
+
+  - name: Install py3
+    yum:
+      name:
+        - python3
+      state: latest
+
+  - name: Install docker-ce
+    yum:
+      name:
+        - docker-ce
+      state: latest
+
+  - name: START DOCKER
+    command: "{{ item }}"
+    with_items:
+      - "systemctl start docker"
+
+  - name: Waiting on docker to run
+    wait_for:
+      timeout: 20
+
+  - name: Upgrade pip docker to latest vesion
+    vars:
+      ansible_python_interpreter: /usr/bin/python3
+    pip:
+      name:
+      - pip
+      - docker
+      state: latest
+    register: pip_d_output
+
+  - name: Log into contrail registry
+    vars:
+      ansible_python_interpreter: /usr/bin/python3
+    docker_login:
+      registry: "{{ c_registry }}"
+      username: "{{ c_username }}"
+      password: "{{ c_password }}"
+
+  - name: Pull default Docker image
+    vars:
+      ansible_python_interpreter: /usr/bin/python3
+    docker_image:
+      name: "hub.juniper.net/contrail/contrail-command-deployer:{{ CEM_VER }}"
+      source: pull
+
+  - name: Run the docker Contrail Command Controller
+    command: "docker run -td --net host -e action=provision_cluster -v /root/command_servers.yml:/command_servers.yml \
+              -v /root/instances.yml:/instances.yml --privileged --name contrail_command_deployer \
+              hub.juniper.net/contrail/contrail-command-deployer:{{ CEM_VER }}"
+
+  - name: Waiting for 30 sec
+    wait_for:
+      timeout: 30
+
+  - name: Looking to see if CEM Contrial Command Controller container is running
+    shell: "docker inspect --format '{''{ .State.Running }''}' contrail_command"
+    register: is_cc_running
+    until: is_cc_running.stdout == "true"
+    retries: 25
+    delay: 30
+    
+  - debug:
+      msg: Contrail Command is now running on https://"{{ hostvars['command']['PRIVATE_IP'] }}":9091
+    when: is_cc_running.stdout == "true"

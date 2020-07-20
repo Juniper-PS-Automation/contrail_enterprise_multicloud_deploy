@@ -1,0 +1,31 @@
+---
+- name: SSH Key Sharing
+  hosts: servers
+  gather_facts: no
+  vars:
+    - known_hosts: "~/.ssh/known_hosts"
+  tasks:
+  - block: 
+    - name: SSH KeyGen command
+      tags: run
+      shell: >
+        ssh-keygen -q -b 2048 -t rsa -N "" -C "creating SSH" -f ~/.ssh/id_rsa
+        creates="~/.ssh/id_rsa"
+  
+    - name: Fetch the keyfile from the node to master
+      tags: run
+      fetch:
+        src: "~/.ssh/id_rsa.pub"
+        dest: "buffer/{{ inventory_hostname }}-id_rsa.pub"
+        flat: yes
+  
+    - name: Copy the key add to authorized_keys using Ansible module
+      tags: runcd
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file','buffer/{{item}}-id_rsa.pub')}}"
+      when: "{{ (item != inventory_hostname) }}"
+      with_items:
+        - "{{ groups['servers'] }}"
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"

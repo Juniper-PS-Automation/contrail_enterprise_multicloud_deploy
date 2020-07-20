@@ -1,0 +1,9 @@
+---
+- name: Host file setup
+  import_playbook: hosts_setup.yml
+
+- name: SSH key sharing
+  import_playbook: build_ssh_id_rsa_keys.yml
+
+- name: SSH known hosts setup
+  import_playbook: build_known_hosts.yml
