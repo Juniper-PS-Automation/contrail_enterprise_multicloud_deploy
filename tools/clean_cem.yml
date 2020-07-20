@@ -1,0 +1,49 @@
+---
+- name: CEM Sledge Hammer Clean
+  hosts: servers
+  gather_facts: no
+  tasks:
+  - block:
+    - name: clean out all docker instances
+      ignore_errors: yes
+      shell: "{{ item }}"
+      with_items:
+        - docker stop $(docker ps -a -q)
+        - docker rm -f $(docker ps -a -q)
+        - docker rmi -f $(docker images -a -q)
+        - docker images -a purge
+        #- docker volume ls | awk '{print $NF}' | xargs -I [] docker volume rm []
+  
+    - name: remove docker
+      ignore_errors: yes
+      yum:
+        name: "{{ packages }}"
+        state: absent
+      vars:
+        ansible_python_interpreter: /usr/bin/python
+        packages:
+        - docker-ce
+        - docker-ce-cli
+        - docker-common
+        - docker-selinux
+        - docker-engine
+        - appformix-manager
+  
+    - name: remove junk files and folders
+      ignore_errors: yes
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /var/lib/docker 2> /dev/null
+        - /etc/docker 2> /dev/null
+        - /var/log/contrail 2> /dev/null
+        - /var/tmp/command_servers.yml 2> /dev/null
+        - /opt/appformix/ 2> /dev/null
+        - /etc/cron.d/appformix_mongo_backup 2> /dev/null
+        - /var/log/appformix 2> /dev/null
+        - rm -rf /var/lib/docker
+        - rm -rf /tmp/appformix-*.tar.gz
+        - rm -rf /tmp/appformix-*rpm
+        - rm -rf /opt/appformix /opt/software
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
