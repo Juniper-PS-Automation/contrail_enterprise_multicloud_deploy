@@ -1,0 +1,11 @@
+supplemental_day_0_cfg:
+  - name: 'baseline_cfg'
+    cfg: |
+      set system ntp server {{ ntp_server }}
+device_to_ztp:
+{% for x in groups['fabric'] %}
+  - serial_number: '{{ hostvars[x].result.facts.serialnumber }}'
+    hostname: '{{ hostvars[x].inventory_hostname }}'
+    supplemental_day_0_cfg: 'baseline_cfg'
+    mgmt_ip: '{{ hostvars[x]['PRIVATE_IP'] }}'
+{% endfor %}

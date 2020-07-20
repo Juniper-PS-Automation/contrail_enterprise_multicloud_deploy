@@ -1,0 +1,21 @@
+---
+- name: Get device SN and build day0 file
+  hosts: fabric
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Retrieve device facts
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      juniper_junos_facts:        
+      register: result
+
+    - name: build cem day0 file
+      delegate_to: localhost
+      template:
+        src: build_day0_block.j2
+        dest: day0_block.yml
+        
