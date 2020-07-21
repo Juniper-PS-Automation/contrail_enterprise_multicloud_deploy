@@ -4,12 +4,12 @@ command PRIVATE_IP=10.53.38.173
 [command_center:vars]
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_ssh_user='root'
-ansible_password='lab123'
+ansible_password='[your_fabric_device_root_password]'
 c_registry=hub.juniper.net
 c_username=[your_contrail_username]
 c_password=[your_contrail_password]
 USERNAME=root
-DEVICE_PASSWORD=lab123
+DEVICE_PASSWORD=[your_contrail_server_root_password]
 
 [servers]
 command PRIVATE_IP=10.53.38.173
