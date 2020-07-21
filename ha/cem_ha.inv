@@ -28,9 +28,9 @@ xflow3 PRIVATE_IP=10.53.36.139
 [servers:vars]
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_ssh_user='root'
-ansible_password='lab123'
+ansible_password='[your_contrail_server_root_password]'
 container_name=contrail_command_deployer
-ssh_known_host_key=AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBO543ilDYejW348dxB8bsesNjZ/PfwFsHM2jaNntcDLqrEQLCohs1Wee9kXIPQt7ECWBkZwcmQsOxwLIPjFMhww=
+ssh_known_host_key=[your_key]
 
 [all:vars]
 CEM_VER=2005.1.66
@@ -61,10 +61,8 @@ leaf1 PRIVATE_IP=10.53.38.184
 leaf2 PRIVATE_IP=10.53.38.182
 leaf3 PRIVATE_IP=10.53.38.180
 leaf4 PRIVATE_IP=10.53.38.179
-##sw1 PRIVATE_IP=10.53.38.177
-##sw2 PRIVATE_IP=10.53.38.175
 
 [fabric:vars]
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_ssh_user='root'
-ansible_password='Embe1mpls'
+ansible_password='[your_fabric_device_root_password]'
