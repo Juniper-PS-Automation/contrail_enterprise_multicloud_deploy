@@ -6,8 +6,8 @@ ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_ssh_user='root'
 ansible_password='lab123'
 c_registry=hub.juniper.net
-c_username=JNPR-FieldUser384
-c_password=iM5uRxEqWPc7mpIA4Qz9
+c_username=[your_contrail_username]
+c_password=[your_contrail_password]
 USERNAME=root
 DEVICE_PASSWORD=lab123
 
