@@ -3,18 +3,18 @@
   hosts: servers
   gather_facts: no
   tasks:
-  - name: Remove old eth1
+  - name: Remove old {{ fabric_facing_intf }}
     file:
       path: "{{ item }}"
       state: absent
     with_items:
-      - /etc/sysconfig/network-scripts/ifcfg-eth1
-    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname"
+      - /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
 
-  - name: Add ifcfg-eth1 to control1
+  - name: Add ifcfg-eth1 to command
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -27,17 +27,40 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ fabric_facing_ip_1 }}
-          PREFIX=24
+          IPADDR={{ command_ip }}
+          PREFIX={{ fabric_subnet_mask }}
+    when: "'command' in inventory_hostname"
+
+  - name: Add ifcfg-eth1 to control1
+    become: true
+    blockinfile:
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
+        create: yes
+        marker: ""
+        block: |
+          TYPE=Ethernet
+          BOOTPROTO=none
+          DEFROUTE=no
+          IPV4_FAILURE_FATAL=no
+          IPV6INIT=yes
+          IPV6_AUTOCONF=yes
+          IPV6_DEFROUTE=yes
+          IPV6_FAILURE_FATAL=no
+          IPV6_ADDR_GEN_MODE=stable-privacy
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
+          ONBOOT=yes
+          IPADDR={{ insight_ip_1 }}
+          PREFIX={{ fabric_subnet_mask }}
     when: "'control1' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to control2
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -50,17 +73,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ fabric_facing_ip_2 }}
-          PREFIX=24
+          IPADDR={{ insight_ip_2 }}
+          PREFIX={{ fabric_subnet_mask }}
     when: "'control2' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to control3
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -73,17 +96,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ fabric_facing_ip_3 }}
-          PREFIX=24
+          IPADDR={{ insight_ip_3 }}
+          PREFIX={{ fabric_subnet_mask }}
     when: "'control3' in inventory_hostname"
     
   - name: Add ifcfg-eth1 to insight1
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -96,17 +119,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
           IPADDR={{ insight_ip_1 }}
-          PREFIX=24
+          PREFIX={{ fabric_subnet_mask }}
     when: "'insight1' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to insight2
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -119,17 +142,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
           IPADDR={{ insight_ip_2 }}
-          PREFIX=24
+          PREFIX={{ fabric_subnet_mask }}
     when: "'insight2' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to insight3
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -142,17 +165,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
           IPADDR={{ insight_ip_3 }}
-          PREFIX=24
+          PREFIX={{ fabric_subnet_mask }}
     when: "'insight3' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to xflow1
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -165,17 +188,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
           IPADDR={{ xflow_ip_1 }}
-          PREFIX=24
+          PREFIX={{ fabric_subnet_mask }}
     when: "'xflow1' in inventory_hostname"
     
   - name: Add ifcfg-eth1 to xflow2
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -188,17 +211,17 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
           IPADDR={{ xflow_ip_2 }}
-          PREFIX=24
+          PREFIX={{ fabric_subnet_mask }}
     when: "'xflow2' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to xflow3
     become: true
     blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ fabric_facing_intf }}
         create: yes
         marker: ""
         block: |
@@ -211,11 +234,11 @@
           IPV6_DEFROUTE=yes
           IPV6_FAILURE_FATAL=no
           IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
+          NAME={{ fabric_facing_intf }}
+          DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
           IPADDR={{ xflow_ip_3 }}
-          PREFIX=24
+          PREFIX={{ fabric_subnet_mask }}
     when: "'xflow3' in inventory_hostname"
 
   - block:
@@ -241,7 +264,7 @@
     - name: Wait for network
       wait_for:
         timeout: 30
-    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname"
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
 
   - block:
     - name: Set hostnames
