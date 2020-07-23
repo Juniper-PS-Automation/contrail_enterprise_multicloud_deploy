@@ -120,21 +120,21 @@
               roles:
                 appformix_bare_host:
                 appformix_flows:
-                  telemetry_in_band_interface_name: eth1
+                  telemetry_in_band_interface_name: {{ insight_vrrp_intf }}
             xflow2:
               ip: {{ hostvars['xflow2']['PRIVATE_IP'] }}
               provider: bms
               roles:
                 appformix_bare_host:
                 appformix_flows:
-                  telemetry_in_band_interface_name: eth1
+                  telemetry_in_band_interface_name: {{ insight_vrrp_intf }}
             xflow3:
               ip: {{ hostvars['xflow3']['PRIVATE_IP'] }}
               provider: bms
               roles:
                 appformix_bare_host:
                 appformix_flows:
-                  telemetry_in_band_interface_name: eth1
+                  telemetry_in_band_interface_name: {{ insight_vrrp_intf }}
           contrail_configuration:
             CONTRAIL_CONTAINER_TAG: "{{ CEM_VER }}"
             CONTRAIL_VERSION: "{{ CEM_VER }}"
@@ -186,4 +186,4 @@
             telemetry_in_band_cidr: {{ xflow_telemetry_in_band_cidr }}
             telemetry_in_band_vlan_id: {{ xflow_telemetry_in_band_vlan_id }}
             loadbalancer_management_vip: {{ xflow_load_balance_mgmt_vip }}
-            
+ 
