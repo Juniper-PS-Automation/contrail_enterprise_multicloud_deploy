@@ -3,40 +3,13 @@
   hosts: servers
   gather_facts: no
   tasks:
-  #- name: eth0 interface down, only for VMM POD hack to get kolla VIP
-  #  command: bash -c "ifconfig eth0 down"
-  #  when: "'dummy' in inventory_hostname"
-
   - name: Remove old eth1
     file:
       path: "{{ item }}"
       state: absent
     with_items:
       - /etc/sysconfig/network-scripts/ifcfg-eth1
-    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
-
-  - name: Add ifcfg-eth1 to command
-    become: true
-    blockinfile:
-        path: /etc/sysconfig/network-scripts/ifcfg-eth1
-        create: yes
-        marker: ""
-        block: |
-          TYPE=Ethernet
-          BOOTPROTO=none
-          DEFROUTE=no
-          IPV4_FAILURE_FATAL=no
-          IPV6INIT=yes
-          IPV6_AUTOCONF=yes
-          IPV6_DEFROUTE=yes
-          IPV6_FAILURE_FATAL=no
-          IPV6_ADDR_GEN_MODE=stable-privacy
-          NAME=eth1
-          DEVICE=eth1
-          ONBOOT=yes
-          IPADDR={{ command_ip }}
-          PREFIX=24
-    when: "'command' in inventory_hostname"
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname"
 
   - name: Add ifcfg-eth1 to control1
     become: true
@@ -245,7 +218,17 @@
           PREFIX=24
     when: "'xflow3' in inventory_hostname"
 
-  - block:   
+  - block:
+    - name: make eth1 interface up on all servers
+      command: bash -c "ifup eth1"
+
+    - name: Add static route to servers for fabric loopbacks
+      lineinfile:
+          dest: /etc/sysconfig/network-scripts/route-{{ fabric_facing_intf }}
+          line: ip route add {{ fabric_loopback_cidr }} via {{ v_router_gateway }}
+          state: present
+          create: yes
+
     - name: Check if Service Exists
       stat: path=/etc/init.d/network
       register: service_status
@@ -258,7 +241,9 @@
     - name: Wait for network
       wait_for:
         timeout: 30
-    
+    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname"
+
+  - block:
     - name: Set hostnames
       hostname:
         name: "{{ item }}"
@@ -281,7 +266,4 @@
         state: present
       with_items:
         - "{{ groups['fabric'] }}"
-        
-    - name: make eth1 interface up on all servers
-      command: bash -c "ifup eth1"
     when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
