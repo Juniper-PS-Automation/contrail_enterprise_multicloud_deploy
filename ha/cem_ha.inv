@@ -29,6 +29,9 @@ ansible_ssh_user='root'
 ansible_password='[your_contrail_server_root_password]'
 container_name=contrail_command_deployer
 ssh_known_host_key=[your_key]
+xflow_load_balance_mgmt_vip=10.53.36.210
+kolla_vip_address=10.53.36.14
+fabric_loopback_cidr=172.255.1.0/24
 
 [all:vars]
 CEM_VER=2005.1.66
