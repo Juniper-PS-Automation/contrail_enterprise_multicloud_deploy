@@ -36,9 +36,10 @@ fabric_loopback_cidr=172.255.1.0/24
 [all:vars]
 CEM_VER=2005.1.66
 ntp_server=ntp.juniper.net
-
-### IN BAND SETTINGS FOR instances.yml
+command_ip=172.16.102.100
+### BEGIN IN BAND SETTINGS FOR instances.yml
 fabric_facing_intf=eth1
+fabric_subnet_mask=24
 v_router_gateway=172.16.102.1
 fabric_facing_ip_1=172.16.102.104
 fabric_facing_ip_2=172.16.102.105
@@ -54,6 +55,7 @@ insight_vrrp_intf=eth1
 xflow_vip=172.16.102.189
 xflow_telemetry_in_band_cidr=172.16.102.0/24
 xflow_telemetry_in_band_vlan_id=66
+### END IN BAND SETTINGS FOR instances.yml
 
 [fabric]
 spine1 PRIVATE_IP=10.53.38.188
