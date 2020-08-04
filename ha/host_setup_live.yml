@@ -22,7 +22,7 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ command_ip }}
+          IPADDR={{ hostvars['command']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
     when: "'command' in inventory_hostname"
 
@@ -45,7 +45,7 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ insight_ip_1 }}
+          IPADDR={{ hostvars['insights01']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
     when: "'control1' in inventory_hostname"
 
