@@ -22,7 +22,7 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ hostvars['command']['fabric_ip'] }}
+          IPADDR={{ hostvars['contrailcommand']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
     when: "'command' in inventory_hostname"
 
@@ -45,9 +45,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ hostvars['insights01']['fabric_ip'] }}
+          IPADDR={{ hostvars['contrailcontrol01']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'control1' in inventory_hostname"
+    when: "'control01' in inventory_hostname"
 
   - name: Add ifcfg-{{ fabric_facing_intf }} to control2
     become: true
@@ -68,9 +68,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ insight_ip_2 }}
+          IPADDR={{ hostvars['contrailcontrol02']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'control2' in inventory_hostname"
+    when: "'control02' in inventory_hostname"
 
   - name: Add ifcfg-{{ fabric_facing_intf }} to control3
     become: true
@@ -91,9 +91,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ insight_ip_3 }}
+          IPADDR={{ hostvars['contrailcontrol03']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'control3' in inventory_hostname"
+    when: "'control03' in inventory_hostname"
     
   - name: Add ifcfg-{{ fabric_facing_intf }} to insight1
     become: true
@@ -114,9 +114,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ insight_ip_1 }}
+          IPADDR={{ hostvars['insights01']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'insight1' in inventory_hostname"
+    when: "'insights01' in inventory_hostname"
 
   - name: Add ifcfg-{{ fabric_facing_intf }} to insight2
     become: true
@@ -137,9 +137,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ insight_ip_2 }}
+          IPADDR={{ hostvars['insights02']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'insight2' in inventory_hostname"
+    when: "'insights02' in inventory_hostname"
 
   - name: Add ifcfg-{{ fabric_facing_intf }} to insight3
     become: true
@@ -160,9 +160,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ insight_ip_3 }}
+          IPADDR={{ hostvars['insights03']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'insight3' in inventory_hostname"
+    when: "'insights03' in inventory_hostname"
 
   - name: Add ifcfg-{{ fabric_facing_intf }} to xflow1
     become: true
@@ -183,9 +183,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ xflow_ip_1 }}
+          IPADDR={{ hostvars['xflow01']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'xflow1' in inventory_hostname"
+    when: "'xflow01' in inventory_hostname"
     
   - name: Add ifcfg-{{ fabric_facing_intf }} to xflow2
     become: true
@@ -206,9 +206,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ xflow_ip_2 }}
+          IPADDR={{ hostvars['xflow02']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'xflow2' in inventory_hostname"
+    when: "'xflow02' in inventory_hostname"
 
   - name: Add ifcfg-{{ fabric_facing_intf }} to xflow3
     become: true
@@ -229,9 +229,9 @@
           NAME={{ fabric_facing_intf }}
           DEVICE={{ fabric_facing_intf }}
           ONBOOT=yes
-          IPADDR={{ xflow_ip_3 }}
+          IPADDR={{ hostvars['xflow03']['fabric_ip'] }}
           PREFIX={{ fabric_subnet_mask }}
-    when: "'xflow3' in inventory_hostname"
+    when: "'xflow03' in inventory_hostname"
 
   - block:
     - name: Add static route to servers for fabric loopbacks
@@ -253,4 +253,4 @@
     - name: Wait for network
       wait_for:
         timeout: 30
-    when: "'control' in inventory_hostname or 'insight' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
+    when: "'control' in inventory_hostname or 'insights' in inventory_hostname or 'xflow' in inventory_hostname or 'command' in inventory_hostname"
